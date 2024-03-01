@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { nanoid } from 'nanoid';
 
 import { ContactsForm, ContactsList, ContactsFilter } from './components';
@@ -6,24 +6,15 @@ import { ContactsForm, ContactsList, ContactsFilter } from './components';
 const CONTACTS_STORAGE_ITEM = 'contacts';
 
 export const App = () => {
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState(() => JSON.parse(localStorage.getItem(CONTACTS_STORAGE_ITEM)) || []);
   const [filter, setFilter] = useState('');
-
-  useEffect(
-    () => {
-      const savedContacts = JSON.parse(localStorage.getItem(CONTACTS_STORAGE_ITEM));
-
-      if (savedContacts) setContacts(savedContacts);
-    },
-    []
-  );
 
   useEffect(
     () => localStorage.setItem(CONTACTS_STORAGE_ITEM, JSON.stringify(contacts)),
     [contacts]
   );
 
-  const addContact = useCallback(
+  const addContact =
     (data) => {
       if (contacts.some(({ name }) => data.name.toLowerCase() === name.toLowerCase())) {
         alert(`${data.name} is already in contacts.`);
@@ -31,19 +22,11 @@ export const App = () => {
       }
 
       setContacts((state) => [...state, { ...data, id: nanoid() }]);
-    },
-    [contacts, setContacts]
-  );
+    };
 
-  const deleteContact = useCallback(
-    (contactId) => setContacts(state => state.filter(({ id }) => id !== contactId)),
-    [setContacts]
-  );
+  const deleteContact = (contactId) => setContacts(state => state.filter(({ id }) => id !== contactId));
 
-  const changeFilter = useCallback(
-    (filterQuery) => setFilter(filterQuery),
-    [setFilter]
-  );
+  const changeFilter = (filterQuery) => setFilter(filterQuery);
 
   const filterContacts = () => (
     contacts.filter(({ name }) => name.toLowerCase().includes(filter))
